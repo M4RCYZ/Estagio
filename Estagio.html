@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nota Fiscal</title>
+
+    <link rel="icon" href="favicon.png" type="image/png">
+
+    <style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f4f7fc;
+        color: #333;
+        margin: 0;
+        padding: 0;
+    }
+
+    h1 {
+        text-align: center;
+        color: #FF7043;
+        margin-top: 30px;
+    }
+
+    h2 {
+        color: #333;
+        font-size: 24px;
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    #formulario {
+        background-color: #ffffff;
+        border-radius: 8px;
+        padding: 30px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    label {
+        font-weight: bold;
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    input[type="number"], input[type="text"] {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0 20px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 16px;
+        transition: all 0.3s;
+    }
+
+    input[type="number"]:focus, input[type="text"]:focus {
+        border-color: #FF7043; 
+        box-shadow: 0 0 5px rgba(255, 112, 67, 0.6); 
+    }
+
+    button {
+        background-color: #FF7043;
+        color: white;
+        font-size: 18px;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 5px;
+        width: 100%;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    button:hover {
+        background-color: #FFCC80; 
+    }
+
+    #notaFiscal {
+        background-color: #ffffff;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        margin-top: 30px;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+        display: none;
+    }
+
+    .nota-title {
+        font-size: 18px;
+        margin-bottom: 15px;
+    }
+
+    .nota-data {
+        margin-bottom: 10px;
+        font-size: 16px;
+    }
+
+    .nota-data strong {
+        font-weight: bold;
+    }
+    </style>
+</head>
+<body>
+    
+<h1>Emissão de Nota Fiscal</h1>
+
+<form id="formulario">
+    <label for="valorVenda">Valor da Venda: R$ </label>
+    <input type="number" id="valorVenda" required><br>
+
+    <label for="itens">Itens Vendidos: </label>
+    <input type="text" id="itens" required><br>
+
+    <label for="irpf">Porcentagem do IRPF: </label>
+    <input type="number" id="irpf" required><br>
+
+    <label for="pis">Porcentagem do PIS: </label>
+    <input type="number" id="pis" required><br>
+
+    <label for="cofins">Porcentagem do COFINS: </label>
+    <input type="number" id="cofins" required><br>
+
+    <label for="inss">Porcentagem do INSS: </label>
+    <input type="number" id="inss" required><br>
+
+    <label for="issqn">Porcentagem do ISSQN: </label>
+    <input type="number" id="issqn" required><br>
+
+    <button type="button" onclick="gerarNFS()">Gerar Nota Fiscal</button>
+</form>
+
+<div id="notaFiscal">
+    <h2>Nota Fiscal de Serviço</h2>
+    <p class="nota-title">Informações da Venda:</p>
+    <p class="nota-data"><strong>Valor da Venda: </strong><span id="valorVendaNF"></span></p>
+    <p class="nota-data"><strong>Itens Vendidos:</strong><span id="itensNF"></span></p>
+
+    <p class="nota-title">Impostos Calculados:</p>
+    <p class="nota-data">IRPF: R$ <span id="impostoIRPF"></span></p>
+    <p class="nota-data">PIS: R$ <span id="impostoPIS"></span></p>
+    <p class="nota-data">COFINS: R$ <span id="impostoCOFINS"></span></p>
+    <p class="nota-data">INSS: R$ <span id="impostoINSS"></span></p>
+    <p class="nota-data">ISSQN: R$ <span id="impostoISSQN"></span></p>
+
+    <p class="nota-title">Resumo:</p>
+    <p class="nota-data"><strong>Total de Impostos: R$ </strong><span id="totalImpostos"></span></p>
+    <p class="nota-data"><strong>Valor Líquido: R$ </strong><span id="valorLiquido"></span></p>
+</div>
+
+<script>
+    function calcularImposto(valor, porcentagem) {
+        return valor * (porcentagem / 100);
+    }
+
+    function validarNumero(valor) {
+        return !isNaN(valor) && valor > 0;
+    }
+
+    function gerarNFS() {
+        // Leitura dos dados inseridos pelo usuário
+        var valorVenda = parseFloat(document.getElementById("valorVenda").value);
+        
+        // Verificar se o valor da venda é válido
+        if (!validarNumero(valorVenda)) {
+            alert("Por favor, insira um valor numérico válido para o valor da venda.");
+            return;
+        }
+
+        var itens = document.getElementById("itens").value.split(",");
+        var irpf = parseFloat(document.getElementById("irpf").value);
+        var pis = parseFloat(document.getElementById("pis").value);
+        var cofins = parseFloat(document.getElementById("cofins").value);
+        var inss = parseFloat(document.getElementById("inss").value);
+        var issqn = parseFloat(document.getElementById("issqn").value);
+
+        // Verificar se todas as porcentagens são válidas
+        if (![irpf, pis, cofins, inss, issqn].every(validarNumero)) {
+            alert("Por favor, insira porcentagens válidas para os impostos.");
+            return;
+        }
+
+        // Cálculo dos impostos
+        var impostoIRPF = calcularImposto(valorVenda, irpf);
+        var impostoPIS = calcularImposto(valorVenda, pis);
+        var impostoCOFINS = calcularImposto(valorVenda, cofins);
+        var impostoINSS = calcularImposto(valorVenda, inss);
+        var impostoISSQN = calcularImposto(valorVenda, issqn);
+
+        var totalImpostos = impostoIRPF + impostoPIS + impostoCOFINS + impostoINSS + impostoISSQN;
+        var valorLiquido = valorVenda - totalImpostos;
+
+        // Exibição da Nota Fiscal
+        document.getElementById("valorVendaNF").innerText = valorVenda.toFixed(2);
+        document.getElementById("itensNF").innerText = itens.join(", ");
+        document.getElementById("impostoIRPF").innerText = impostoIRPF.toFixed(2);
+        document.getElementById("impostoPIS").innerText = impostoPIS.toFixed(2);
+        document.getElementById("impostoCOFINS").innerText = impostoCOFINS.toFixed(2);
+        document.getElementById("impostoINSS").innerText = impostoINSS.toFixed(2);
+        document.getElementById("impostoISSQN").innerText = impostoISSQN.toFixed(2);
+        document.getElementById("totalImpostos").innerText = totalImpostos.toFixed(2);
+        document.getElementById("valorLiquido").innerText = valorLiquido.toFixed(2);
+
+        // Exibindo a Nota Fiscal
+        document.getElementById("notaFiscal").style.display = "block";
+    }
+</script>
+
+</body>
+</html>
